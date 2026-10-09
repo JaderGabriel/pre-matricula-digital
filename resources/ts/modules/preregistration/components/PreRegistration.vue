@@ -1,8 +1,14 @@
 <template>
   <div class="mt-5">
     <skeleton-form-preregistration v-if="step === 'LOADING'" />
+    <div v-if="erroCarregamento" class="col-12 col-md-8 offset-md-2 mt-4 alert alert-danger text-center">
+      Não foi possível abrir esta inscrição.
+      <div class="mt-3">
+        <router-link to="/" class="btn btn-primary">Voltar aos processos</router-link>
+      </div>
+    </div>
     <x-form
-      v-if="step !== 'LOADING' && step !== 'PROTOCOL'"
+      v-if="!erroCarregamento && step !== 'LOADING' && step !== 'PROTOCOL'"
       ref="form"
       :key="forceRenderer + '-force-renderer'"
       :disable-proceed="
@@ -224,6 +230,7 @@ const newStudent = ref<PreRegistrationStudentField>(
 const step = ref<
   'LOADING' | 'REVIEW' | 'MATCH' | 'RESPONSIBLE' | 'STUDENT' | 'PROTOCOL'
 >('LOADING');
+const erroCarregamento = ref(false);
 const initialValues = ref({});
 const forceRenderer = ref(0);
 const fetchingPrimaryAddressLatLng = ref(false);
@@ -291,8 +298,9 @@ const getData = () => {
       load: !!route.query?.code,
     })
   ).then((response) => {
-    if (response.stage.status !== 'OPEN') {
-      router.push('/');
+    if (!response.stage || response.stage.status !== 'OPEN') {
+      erroCarregamento.value = true;
+      step.value = 'MATCH';
       return;
     }
 
@@ -343,6 +351,9 @@ const getData = () => {
     newResponsible.value = { ...responsibleData };
     newStudent.value = { ...studentData };
 
+    step.value = 'MATCH';
+  }).catch(() => {
+    erroCarregamento.value = true;
     step.value = 'MATCH';
   });
 };

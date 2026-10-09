@@ -3,6 +3,13 @@ extend type Query {
   Processos ativos da página pública, sem login de servidor.
   """
   publicProcesses: [Process!]! @paginate(scopes: ["active"])
+
+  """
+  Etapa usada pela inscrição pública, sem login de servidor.
+  """
+  processByStage(
+    id: ID! @eq
+  ): ProcessStage! @find
 }
 
 extend type Query @guard(with: ["web", "sanctum", "prematricula"]) {
@@ -37,13 +44,6 @@ extend type Query @guard(with: ["web", "sanctum", "prematricula"]) {
   Lista todos os agrupadores de processos.
   """
   groupers: [ProcessGrouper!]! @all
-
-  """
-  Retorna a etapa do processo de ID.
-  """
-  processByStage(
-    id: ID! @eq
-  ): ProcessStage! @find
 
   """
   Retorna todas as vagas do processo.
