@@ -13,7 +13,7 @@ class LocalizarEnderecoController extends Controller
         $ponto = LocalizarEndereco::coordenada((string) $request->query('endereco', ''));
 
         if ($ponto === null) {
-            return response()->json(['encontrado' => false], 404);
+            return response()->json(['encontrado' => false]);
         }
 
         return response()->json($ponto + ['encontrado' => true]);

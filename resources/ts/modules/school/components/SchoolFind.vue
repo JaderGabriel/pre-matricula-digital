@@ -100,7 +100,6 @@ import {
   GradeFiltered,
   Processes,
   School,
-  ShowVacanciesReturn,
   Vacancies,
 } from '@/modules/school/types';
 import { computed, ref } from 'vue';
@@ -117,11 +116,8 @@ import XField from '@/components/x-form/XField.vue';
 import { localizarEndereco } from '@/maps/localizarEndereco';
 import { markerAddress } from '@/util';
 import { useGeneralStore } from '@/store/general';
-import { useLoader } from '@/composables';
 
-const { loader: loaderProcesses, data: processes } = useLoader<Processes[]>([]);
-const { loader: loaderVacancies } = useLoader<ShowVacanciesReturn>();
-
+const processes = ref<Processes[]>([]);
 const vacancies = ref<Vacancies[]>([]);
 const schools = ref<School[]>([]);
 const store = useGeneralStore();
@@ -140,7 +136,7 @@ const grades = computed(() => {
   const unique: string[] = [];
 
   processes.value.forEach((process) => {
-    process.grades.forEach((grade) => {
+    (process.grades || []).forEach((grade) => {
       if (unique.indexOf(grade.id) !== -1) {
         return;
       }
@@ -195,13 +191,10 @@ const pontosDasEscolas = computed(() =>
 );
 
 const getData = () => {
-  loaderProcesses(() => SchoolFind.showProcesses()).then((response) => {
-    loaderVacancies(() =>
-      SchoolFind.showVacancies({ processes: response.map((p) => p.id) })
-    ).then((res) => {
-      vacancies.value = res.vacancies;
-      schools.value = res.schools;
-    });
+  SchoolFind.carregarConsulta().then((res) => {
+    processes.value = res.processes;
+    vacancies.value = res.vacancies;
+    schools.value = res.schools;
   });
 };
 getData();
@@ -210,7 +203,7 @@ const searchAddress = async () => {
   if (!address.value) {
     return;
   }
-  const filteredAddress = [address.value, store.entity.city, store.entity.state]
+  const filteredAddress = [address.value, store.entity?.city, store.entity?.state]
     .filter((i) => i)
     .join(', ');
   loadingSearchAddress.value = true;

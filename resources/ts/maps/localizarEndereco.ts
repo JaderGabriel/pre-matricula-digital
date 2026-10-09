@@ -1,15 +1,19 @@
-import axios from 'axios';
-
 export async function localizarEndereco(endereco: string): Promise<{
   lat: number;
   lng: number;
   endereco: string;
 } | null> {
   try {
-    const resposta = await axios.get('/pre-matricula-localizar', {
-      params: { endereco },
+    const destino = new URL('/pre-matricula-localizar', window.location.origin);
+    destino.searchParams.set('endereco', endereco);
+    const resposta = await fetch(destino.toString(), {
+      headers: cabecalhosPublicos(),
+      credentials: 'same-origin',
     });
-    const dados = resposta.data;
+    if (!resposta.ok || !resposta.headers.get('content-type')?.includes('json')) {
+      return null;
+    }
+    const dados = await resposta.json();
 
     if (!dados?.encontrado || dados.latitude == null || dados.longitude == null) {
       return null;
@@ -23,4 +27,12 @@ export async function localizarEndereco(endereco: string): Promise<{
   } catch {
     return null;
   }
+}
+
+export function cabecalhosPublicos(): HeadersInit {
+  return {
+    Accept: 'application/json',
+    Authorization: `Bearer ${window.config?.token || ''}`,
+    'X-Requested-With': 'XMLHttpRequest',
+  };
 }

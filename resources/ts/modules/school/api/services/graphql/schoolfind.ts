@@ -4,7 +4,33 @@ import {
   ShowVacanciesReturn,
   Vacancies,
 } from '@/modules/school/types';
+import { cabecalhosPublicos } from '@/maps/localizarEndereco';
 import { graphql } from '@/api';
+
+export const carregarConsulta = async (): Promise<ShowVacanciesReturn & { processes: Processes[] }> => {
+  const resposta = await fetch('/pre-matricula-escolas', {
+    headers: cabecalhosPublicos(),
+    credentials: 'same-origin',
+  });
+
+  if (!resposta.ok || !resposta.headers.get('content-type')?.includes('json')) {
+    return { processes: [], vacancies: [], schools: [] };
+  }
+
+  const dados = await resposta.json();
+
+  return {
+    processes: dados.processes || [],
+    vacancies: dados.vacancies || [],
+    schools: (dados.schools || []).map((school: SchoolInfo) => ({
+      ...school,
+      position: {
+        lat: school.lat,
+        lng: school.lng,
+      },
+    })),
+  };
+};
 
 export const showProcesses = (): Promise<Processes[]> => {
   const payload = {
