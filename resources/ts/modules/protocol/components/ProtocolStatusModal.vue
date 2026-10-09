@@ -10,16 +10,18 @@
         <dl class="mb-0">
           <dt>Aluno(a)</dt>
           <dd>
-            {{ preregistration.student.initials }}
-            ({{ $filters.formatDate(preregistration.student.dateOfBirth) }})
+            <template v-if="preregistration.student">
+              {{ preregistration.student.initials }}
+              ({{ $filters.formatDate(preregistration.student.dateOfBirth) }})
+            </template>
           </dd>
           <pre-registration-position
-            v-if="preregistration.process.showPriorityProtocol"
+            v-if="preregistration.process?.showPriorityProtocol"
             :preregistration="preregistration"
           />
           <dt class="mt-3">Escola</dt>
           <dd>
-            {{ preregistration.school.name }}
+            {{ preregistration.school?.name }}
           </dd>
         </dl>
         <div
@@ -37,13 +39,13 @@
           <dl class="col">
             <dt class="mt-3">Turno</dt>
             <dd>
-              {{ preregistration.classroom.period.name }}
+              {{ preregistration.classroom.period?.name }}
             </dd>
           </dl>
           <dl class="col">
             <dt class="mt-3">Série</dt>
             <dd>
-              {{ preregistration.classroom.grade.name }}
+              {{ preregistration.classroom.grade?.name }}
             </dd>
           </dl>
         </div>
@@ -74,7 +76,7 @@
               <dt>Protocolo</dt>
               <dd>{{ preregistration.waiting.protocol }}</dd>
               <dt>Escola</dt>
-              <dd>{{ preregistration.waiting.school.name }}</dd>
+              <dd>{{ preregistration.waiting.school?.name }}</dd>
             </dl>
           </div>
         </div>
@@ -85,11 +87,11 @@
               <dt>Protocolo</dt>
               <dd>{{ preregistration.parent.protocol }}</dd>
               <dt>Escola</dt>
-              <dd>{{ preregistration.parent.school.name }}</dd>
+              <dd>{{ preregistration.parent.school?.name }}</dd>
             </dl>
           </div>
         </div>
-        <dl v-if="preregistration.stage.observation" class="mb-0">
+        <dl v-if="preregistration.stage?.observation" class="mb-0">
           <dt>Observações e documentos a serem entregues na matrícula</dt>
           <dd v-html="preregistration.stage.observation"></dd>
         </dl>

@@ -86,7 +86,16 @@ export const show = (data: {
       }
     }
   }>(payload)
-    .then(res => res.data.data.preregistration);
+    .then(res => res.data.data.preregistration)
+    .catch((error) => {
+      const recuperada = error?.response?.data?.data?.preregistration;
+
+      if (recuperada?.id) {
+        return recuperada;
+      }
+
+      throw error;
+    });
 };
 
 export const postReturnToWait = (data: ID, grade: Nullable<string>): Promise<ProtocolStatusReturnToWait> => {

@@ -53,22 +53,24 @@
               <dl class="mb-0">
                 <dt>Aluno(a)</dt>
                 <dd>
-                  {{ preregistration.student.initials }}
-                  ({{
-                    $filters.formatDate(preregistration.student.dateOfBirth)
-                  }})
+                  <template v-if="preregistration.student">
+                    {{ preregistration.student.initials }}
+                    ({{
+                      $filters.formatDate(preregistration.student.dateOfBirth)
+                    }})
+                  </template>
                 </dd>
                 <pre-registration-position
-                  v-if="preregistration.process.showPriorityProtocol"
+                  v-if="preregistration.process?.showPriorityProtocol"
                   :preregistration="preregistration"
                   data-test="preregistration-position"
                 />
                 <dt>Escola</dt>
                 <dd>
                   <p class="mb-0">
-                    {{ preregistration.school.name }}
+                    {{ preregistration.school?.name }}
                   </p>
-                  <p v-if="preregistration.school.phone" class="mb-0">
+                  <p v-if="preregistration.school?.phone" class="mb-0">
                     Telefone:
                     {{
                       `(${preregistration.school.area_code}) ${preregistration.school.phone}`
@@ -113,10 +115,10 @@
                     <dt>Escola</dt>
                     <dd>
                       <p class="mb-0">
-                        {{ preregistration.waiting.school.name }}
+                        {{ preregistration.waiting.school?.name }}
                       </p>
                       <p
-                        v-if="preregistration.waiting.school.phone"
+                        v-if="preregistration.waiting.school?.phone"
                         class="mb-0"
                       >
                         Telefone:
@@ -157,10 +159,10 @@ ${preregistration.waiting.school.phone}`
                     <dt>Escola</dt>
                     <dd>
                       <p class="mb-0">
-                        {{ preregistration.parent.school.name }}
+                        {{ preregistration.parent.school?.name }}
                       </p>
                       <p
-                        v-if="preregistration.parent.school.phone"
+                        v-if="preregistration.parent.school?.phone"
                         class="mb-0"
                       >
                         Telefone:
@@ -276,9 +278,11 @@ const getProtocol = (protocol: string) => {
     })
   ).then((res) => {
     preregistration.value = res;
-    if (res === null) {
+    if (!res?.id) {
       notFound.value = true;
     }
+  }).catch(() => {
+    notFound.value = true;
   });
 };
 
