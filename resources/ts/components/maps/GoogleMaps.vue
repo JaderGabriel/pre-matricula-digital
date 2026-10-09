@@ -8,7 +8,7 @@
 </template>
 
 <script setup lang="ts">
-import { onBeforeUnmount, onMounted, ref, watch } from 'vue';
+import { markRaw, onBeforeUnmount, onMounted, ref, shallowRef, watch } from 'vue';
 import type { MapaLeaflet } from '@/maps/leaflet';
 
 const props = withDefaults(
@@ -29,7 +29,7 @@ const props = withDefaults(
 );
 
 const elemento = ref<HTMLElement>();
-const mapa = ref<MapaLeaflet>();
+const mapa = shallowRef<MapaLeaflet>();
 
 const iconesPadrao = () => {
   delete L.Icon.Default.prototype._getIconUrl;
@@ -73,8 +73,9 @@ onMounted(() => {
   L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
     attribution: '&copy; OpenStreetMap',
   }).addTo(instancia);
-  mapa.value = instancia;
+  mapa.value = markRaw(instancia);
   enquadrar(props.pontos || []);
+  setTimeout(() => instancia.invalidateSize(), 0);
 });
 
 watch(

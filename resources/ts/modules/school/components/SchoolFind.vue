@@ -172,12 +172,20 @@ const schoolsInMap = computed<GoogleMapsMarker[]>(() =>
       }
       return true;
     })
-    .filter((school) => school.lat && school.lng)
     .map((school) => ({
       ...school,
       title: school.name,
-      position: { lat: school.lat, lng: school.lng },
+      position: {
+        lat: Number(school.lat),
+        lng: Number(school.lng),
+      },
     }))
+    .filter(
+      (school) =>
+        Number.isFinite(school.position.lat) &&
+        Number.isFinite(school.position.lng) &&
+        !(school.position.lat === 0 && school.position.lng === 0)
+    )
 );
 
 const pontosDasEscolas = computed(() =>

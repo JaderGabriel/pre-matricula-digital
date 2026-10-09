@@ -9,6 +9,7 @@ interface MapaLeaflet {
     limites: [[number, number], [number, number]],
     opcoes?: { padding?: [number, number]; maxZoom?: number }
   ): void;
+  invalidateSize(): void;
   remove(): void;
   on(evento: string, ouvinte: (evento: { latlng: PontoLeaflet }) => void): void;
 }
@@ -41,6 +42,7 @@ interface LeafletGlobal {
     className: string;
     html: string;
     iconSize: [number, number];
+    iconAnchor?: [number, number];
   }): unknown;
 }
 
