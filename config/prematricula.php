@@ -19,6 +19,7 @@ return [
     'state' => 'SC',
 
     'map' => [
+        // Coordenada de fábrica. O mapa usa a cidade da instituição quando este par não foi alterado.
         'lat' => -28.7,
         'lng' => -49.3,
         'zoom' => 13,

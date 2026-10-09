@@ -59,6 +59,7 @@
             :lat="lat"
             :lng="lng"
             :zoom="zoom"
+            :pontos="pontosDasEscolas"
             style="height: 400px"
           >
             <template #default="{ map }">
@@ -177,6 +178,12 @@ const schoolsInMap = computed<GoogleMapsMarker[]>(() =>
       title: school.name,
       position: { lat: school.lat, lng: school.lng },
     }))
+);
+
+const pontosDasEscolas = computed(() =>
+  schoolsInMap.value
+    .map((escola) => escola.position)
+    .filter((ponto): ponto is { lat: number; lng: number } => ponto?.lat != null && ponto?.lng != null)
 );
 
 const getData = () => {

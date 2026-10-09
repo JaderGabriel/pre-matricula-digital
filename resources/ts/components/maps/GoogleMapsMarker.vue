@@ -7,8 +7,8 @@
 <script setup lang="ts">
 import {
   ComponentInternalInstance,
-  computed,
   getCurrentInstance,
+  nextTick,
   onBeforeUnmount,
   onMounted,
   ref,
@@ -43,9 +43,14 @@ const ponto = (marcador: GoogleMapsMarker): [number, number] | null => {
   return [Number(lat), Number(lng)];
 };
 
-onMounted(() => {
+const desenhar = () => {
   const coordenadas = ponto(props.marker);
-  if (!coordenadas) {
+  if (!props.map || !coordenadas) {
+    return;
+  }
+
+  if (interno.value) {
+    interno.value.setLatLng(coordenadas);
     return;
   }
 
@@ -88,16 +93,16 @@ onMounted(() => {
   }
 
   interno.value = marcador;
+};
+
+onMounted(async () => {
+  await nextTick();
+  desenhar();
 });
 
 watch(
   () => ponto(props.marker)?.join(','),
-  () => {
-    const coordenadas = ponto(props.marker);
-    if (coordenadas) {
-      interno.value?.setLatLng(coordenadas);
-    }
-  }
+  () => desenhar()
 );
 
 onBeforeUnmount(() => {
