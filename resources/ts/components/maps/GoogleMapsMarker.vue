@@ -14,98 +14,98 @@ import {
   ref,
   watch,
 } from 'vue';
+import type { MapaLeaflet, MarcadorLeaflet } from '@/maps/leaflet';
 import { GoogleMapsMarker, LatLng } from '@/types';
 
 const emit = defineEmits<{
   (action: 'new-position', payload: LatLng): void;
+  (action: 'click', payload: GoogleMapsMarker): void;
 }>();
 
 const props = defineProps<{
-  map: google.maps.Map;
+  map: MapaLeaflet;
   marker: GoogleMapsMarker;
   draggable?: boolean;
 }>();
 
 const vm = getCurrentInstance() as ComponentInternalInstance;
-const internalMarker = ref<google.maps.Marker>();
+const interno = ref<MarcadorLeaflet>();
 
-const draggableConfig = {
-  icon: 'https://maps.google.com/mapfiles/ms/icons/green-dot.png',
+const ponto = (marcador: GoogleMapsMarker): [number, number] | null => {
+  const posicao = marcador.position as { lat?: number | (() => number); lng?: number | (() => number) } | null;
+  const lat = typeof posicao?.lat === 'function' ? posicao.lat() : posicao?.lat ?? marcador.lat;
+  const lng = typeof posicao?.lng === 'function' ? posicao.lng() : posicao?.lng ?? marcador.lng;
+
+  if (lat == null || lng == null) {
+    return null;
+  }
+
+  return [Number(lat), Number(lng)];
 };
 
-const config = computed(() => {
-  const dConfig = props.draggable ? draggableConfig : {};
-
-  return {
-    ...(props.marker.config || {}),
-    ...dConfig,
-  };
-});
-
 onMounted(() => {
-  internalMarker.value = new google.maps.Marker({
-    position: props.marker.position,
-    map: props.map,
-    draggable: props.draggable,
-    ...config.value,
-  });
-
-  if (vm.proxy?.$el.innerHTML.length) {
-    const infowindow = new google.maps.InfoWindow({
-      content: vm.proxy?.$el.innerHTML,
-    });
-
-    internalMarker.value?.addListener('click', () => {
-      infowindow.open(props.map, internalMarker.value);
-    });
+  const coordenadas = ponto(props.marker);
+  if (!coordenadas) {
+    return;
   }
 
-  internalMarker.value?.addListener('click', () => {
-    vm.proxy?.$emit('click', props.marker);
-  });
+  const icone = props.draggable || props.marker.config
+    ? L.divIcon({
+        className: '',
+        html: '<span style="display:block;width:16px;height:16px;border-radius:50%;background:#fff;border:4px solid #009b4d"></span>',
+        iconSize: [16, 16],
+      })
+    : undefined;
 
-  internalMarker.value?.addListener(
-    'dragend',
-    (event: { latLng: google.maps.LatLng }) => {
-      emit('new-position', {
-        lat: event.latLng.lat(),
-        lng: event.latLng.lng(),
-      });
-    }
-  );
+  const marcador = L.marker(coordenadas, {
+    draggable: props.draggable,
+    icon: icone,
+  }).addTo(props.map);
+
+  const html = vm.proxy?.$el?.innerHTML?.trim();
+  if (html) {
+    marcador.bindPopup(html);
+  }
+
+  marcador.on('click', () => {
+    emit('click', props.marker);
+  });
 
   if (props.draggable) {
-    google.maps.event.addListener(
-      props.map,
-      'click',
-      (event: { latLng: google.maps.LatLng }) => {
-        internalMarker.value?.setPosition(event.latLng);
-        emit('new-position', {
-          lat: event.latLng.lat(),
-          lng: event.latLng.lng(),
-        });
-      }
-    );
+    marcador.on('dragend', (evento) => {
+      emit('new-position', {
+        lat: evento.latlng.lat,
+        lng: evento.latlng.lng,
+      });
+    });
+    props.map.on('click', (evento) => {
+      marcador.setLatLng([evento.latlng.lat, evento.latlng.lng]);
+      emit('new-position', {
+        lat: evento.latlng.lat,
+        lng: evento.latlng.lng,
+      });
+    });
   }
+
+  interno.value = marcador;
 });
 
-const reactiveLat = computed(() => props.marker.position?.lat);
-const reactiveLng = computed(() => props.marker.position?.lng);
-
 watch(
-  [reactiveLat, reactiveLng],
+  () => ponto(props.marker)?.join(','),
   () => {
-    internalMarker.value?.setPosition(props.marker.position);
-  },
-  { deep: true }
+    const coordenadas = ponto(props.marker);
+    if (coordenadas) {
+      interno.value?.setLatLng(coordenadas);
+    }
+  }
 );
 
 onBeforeUnmount(() => {
-  internalMarker.value?.setVisible(false);
+  interno.value?.remove();
 });
 
 defineExpose({
-  internalMarker,
+  internalMarker: interno,
   marker: props.marker,
 });
 </script>
