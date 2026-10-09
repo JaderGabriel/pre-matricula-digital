@@ -11,7 +11,7 @@ class OpenPreRegistration
     {
         $abertos = self::abertos();
 
-        return $abertos === [] ? null : $abertos[0]['url'];
+        return $abertos === [] ? null : url('/pre-matricula-digital');
     }
 
     /**

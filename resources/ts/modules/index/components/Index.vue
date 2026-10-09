@@ -53,7 +53,7 @@
           <div class="row">
             <div class="col-12 mt-3 mt-sm-2 d-flex">
               <h4 class="m-0">
-                {{ process.name }} ({{ process.schoolYear.year }})
+                {{ process.name }}<template v-if="process.schoolYear && process.schoolYear.year"> ({{ process.schoolYear.year }})</template>
               </h4>
               <router-link
                 v-if="process.showWaitingList"
@@ -68,6 +68,16 @@
               >
                 Lista de espera não disponível
               </span>
+            </div>
+          </div>
+          <div v-if="etapaAberta(process)" class="row">
+            <div class="col-12 mt-2">
+              <router-link
+                :to="`/inscricao/${etapaAberta(process).id}`"
+                class="btn btn-primary"
+              >
+                Inscrever em {{ process.name }}
+              </router-link>
             </div>
           </div>
           <process-stages :process="process" class="mb-3" />
@@ -254,6 +264,9 @@ export default defineComponent({
         processes.value = allProcesses;
       });
     }
+    function etapaAberta(process: Processes) {
+      return (process.stages || []).find((stage: Stages) => stage.status === 'OPEN') || null;
+    }
     function getData() {
       getNotices();
       getProceses();
@@ -276,6 +289,7 @@ export default defineComponent({
       cookieName,
       notice,
       processes: getProcesses,
+      etapaAberta,
       truncateText,
       hasNotice,
       close,
