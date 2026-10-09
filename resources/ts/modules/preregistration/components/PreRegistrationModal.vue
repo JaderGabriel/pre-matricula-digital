@@ -1147,18 +1147,23 @@ const load = (protocol: string) => {
       protocol,
     })
   ).then((res) => {
-    if (!res?.process) {
+    if (!res?.id) {
       loadError.value = 'Inscrição não encontrada.';
       return;
     }
+
+    const processo = {
+      ...(res.process || {}),
+      fields: (res.process?.fields || []).filter((field) => field?.field),
+    };
     const { fields: responsibleFields, data: responsibleData } =
-      parseResponsibleFieldsFromProcess(res.process);
+      parseResponsibleFieldsFromProcess(processo);
 
     const { fields: studentFields, data: studentData } =
-      parseStudentFieldsFromProcess(res.process);
+      parseStudentFieldsFromProcess(processo);
 
-    res.fields
-      .filter((f) => f.field.group === 'RESPONSIBLE')
+    (res.fields || [])
+      .filter((f) => f.field?.group === 'RESPONSIBLE')
       .forEach((f) => {
         const key =
           `field_${f.field.id}` as unknown as keyof typeof responsibleData;
@@ -1167,8 +1172,8 @@ const load = (protocol: string) => {
           f.value as unknown as keyof (typeof responsibleData)[keyof typeof responsibleData];
       });
 
-    res.fields
-      .filter((f) => f.field.group === 'STUDENT')
+    (res.fields || [])
+      .filter((f) => f.field?.group === 'STUDENT')
       .forEach((f) => {
         const key =
           `field_${f.field.id}` as unknown as keyof typeof studentData;
