@@ -7,11 +7,12 @@
 <script setup lang="ts">
 import {
   ComponentInternalInstance,
-  computed,
   getCurrentInstance,
+  nextTick,
+  markRaw,
   onBeforeUnmount,
   onMounted,
-  ref,
+  shallowRef,
   watch,
 } from 'vue';
 import type { MapaLeaflet, MarcadorLeaflet } from '@/maps/leaflet';
@@ -29,7 +30,7 @@ const props = defineProps<{
 }>();
 
 const vm = getCurrentInstance() as ComponentInternalInstance;
-const interno = ref<MarcadorLeaflet>();
+const interno = shallowRef<MarcadorLeaflet>();
 
 const ponto = (marcador: GoogleMapsMarker): [number, number] | null => {
   const posicao = marcador.position as { lat?: number | (() => number); lng?: number | (() => number) } | null;
@@ -43,24 +44,29 @@ const ponto = (marcador: GoogleMapsMarker): [number, number] | null => {
   return [Number(lat), Number(lng)];
 };
 
-onMounted(() => {
+const desenhar = () => {
   const coordenadas = ponto(props.marker);
-  if (!coordenadas) {
+  if (!props.map || !coordenadas) {
     return;
   }
 
-  const icone = props.draggable || props.marker.config
-    ? L.divIcon({
-        className: '',
-        html: '<span style="display:block;width:16px;height:16px;border-radius:50%;background:#fff;border:4px solid #009b4d"></span>',
-        iconSize: [16, 16],
-      })
-    : undefined;
+  if (interno.value) {
+    interno.value.setLatLng(coordenadas);
+    return;
+  }
 
-  const marcador = L.marker(coordenadas, {
+  const cor = props.draggable || props.marker.config ? '#009b4d' : '#0072ff';
+  const icone = L.divIcon({
+    className: '',
+    html: `<span style="display:block;width:16px;height:16px;border-radius:50%;background:${cor};border:2px solid #fff;box-shadow:0 1px 4px rgba(0,0,0,.45)"></span>`,
+    iconSize: [16, 16],
+    iconAnchor: [8, 8],
+  });
+
+  const marcador = markRaw(L.marker(coordenadas, {
     draggable: props.draggable,
     icon: icone,
-  }).addTo(props.map);
+  }).addTo(props.map));
 
   const html = vm.proxy?.$el?.innerHTML?.trim();
   if (html) {
@@ -88,16 +94,16 @@ onMounted(() => {
   }
 
   interno.value = marcador;
+};
+
+onMounted(async () => {
+  await nextTick();
+  desenhar();
 });
 
 watch(
   () => ponto(props.marker)?.join(','),
-  () => {
-    const coordenadas = ponto(props.marker);
-    if (coordenadas) {
-      interno.value?.setLatLng(coordenadas);
-    }
-  }
+  () => desenhar()
 );
 
 onBeforeUnmount(() => {

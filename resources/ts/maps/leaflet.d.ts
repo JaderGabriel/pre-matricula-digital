@@ -5,6 +5,11 @@ interface PontoLeaflet {
 
 interface MapaLeaflet {
   setView(centro: [number, number], zoom?: number): MapaLeaflet;
+  fitBounds(
+    limites: [[number, number], [number, number]],
+    opcoes?: { padding?: [number, number]; maxZoom?: number }
+  ): void;
+  invalidateSize(): void;
   remove(): void;
   on(evento: string, ouvinte: (evento: { latlng: PontoLeaflet }) => void): void;
 }
@@ -18,6 +23,12 @@ interface MarcadorLeaflet {
 }
 
 interface LeafletGlobal {
+  Icon: {
+    Default: {
+      prototype: { _getIconUrl?: unknown };
+      mergeOptions(opcoes: Record<string, string>): void;
+    };
+  };
   map(elemento: HTMLElement): MapaLeaflet;
   tileLayer(
     url: string,
@@ -31,6 +42,7 @@ interface LeafletGlobal {
     className: string;
     html: string;
     iconSize: [number, number];
+    iconAnchor?: [number, number];
   }): unknown;
 }
 

@@ -59,6 +59,7 @@
             :lat="lat"
             :lng="lng"
             :zoom="zoom"
+            :pontos="pontosDasEscolas"
             style="height: 400px"
           >
             <template #default="{ map }">
@@ -171,12 +172,26 @@ const schoolsInMap = computed<GoogleMapsMarker[]>(() =>
       }
       return true;
     })
-    .filter((school) => school.lat && school.lng)
     .map((school) => ({
       ...school,
       title: school.name,
-      position: { lat: school.lat, lng: school.lng },
+      position: {
+        lat: Number(school.lat),
+        lng: Number(school.lng),
+      },
     }))
+    .filter(
+      (school) =>
+        Number.isFinite(school.position.lat) &&
+        Number.isFinite(school.position.lng) &&
+        !(school.position.lat === 0 && school.position.lng === 0)
+    )
+);
+
+const pontosDasEscolas = computed(() =>
+  schoolsInMap.value
+    .map((escola) => escola.position)
+    .filter((ponto): ponto is { lat: number; lng: number } => ponto?.lat != null && ponto?.lng != null)
 );
 
 const getData = () => {
