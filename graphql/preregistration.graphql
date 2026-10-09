@@ -234,7 +234,7 @@ type PreRegistration {
   inClassroom: Classroom @belongsTo
   student: Person @belongsTo
   responsible: Person @belongsTo
-  relationType: RelationType! @rename(attribute: "relation_type_id")
+  relationType: RelationType @rename(attribute: "relation_type_id")
   status: PreRegistrationStatus!
   observation: String
   fields: [PreRegistrationField!]! @hasMany

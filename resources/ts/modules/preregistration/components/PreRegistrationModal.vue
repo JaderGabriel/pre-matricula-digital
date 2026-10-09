@@ -13,14 +13,17 @@
         !preregistrationEmpty ? preregistration.status : ''
       )
     "
-    :initial-loading="preregistrationEmpty"
+    :initial-loading="preregistrationEmpty && !loadError"
     :large="true"
     loading-text
     :persistent="preregistrationEmpty"
     @close-modal="$router.push({ name: 'preregistrations' })"
   >
     <template #body>
-      <div class="m-auto" style="max-width: 740px">
+      <div v-if="loadError" class="alert alert-danger m-4">
+        {{ loadError }}
+      </div>
+      <div v-else class="m-auto" style="max-width: 740px">
         <div v-if="step === 'REJECT'" class="mt-4 text-danger font-weight-bold">
           Tem certeza que deseja indeferir a inscrição?
           <hr />
@@ -277,7 +280,7 @@
           <dl class="col-12">
             <dt class="font-hind font-size-10">Fase escolar</dt>
             <dd>
-              {{ preregistration.grade.course.name }}
+              {{ preregistration.grade?.course?.name }}
             </dd>
           </dl>
           <dl class="col-12">
@@ -1131,9 +1134,12 @@ const relationType = (type: string) => {
   return store.relationTypes.find((r) => r.key === type)?.label;
 };
 
+const loadError = ref('');
+
 const load = (protocol: string) => {
   if (!protocol) return;
 
+  loadError.value = '';
   preregistration.value = {} as PreRegistration;
 
   loaderByProtocol(() =>
@@ -1141,6 +1147,10 @@ const load = (protocol: string) => {
       protocol,
     })
   ).then((res) => {
+    if (!res?.process) {
+      loadError.value = 'Inscrição não encontrada.';
+      return;
+    }
     const { fields: responsibleFields, data: responsibleData } =
       parseResponsibleFieldsFromProcess(res.process);
 
@@ -1181,8 +1191,10 @@ const load = (protocol: string) => {
       ...studentData,
       ...res.student,
       student_place_of_birth:
-        res.student.student_city_of_birth || res.student.student_place_of_birth,
+        res.student?.student_city_of_birth || res.student?.student_place_of_birth,
     };
+  }).catch(() => {
+    loadError.value = 'Não foi possível abrir esta inscrição.';
   });
 };
 
