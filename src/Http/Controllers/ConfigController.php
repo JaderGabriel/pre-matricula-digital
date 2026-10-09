@@ -32,7 +32,7 @@ class ConfigController
             'slogan' => config('prematricula.slogan'),
             'allow_optional_address' => config('prematricula.allow_optional_address'),
             'show_how_to_do_video' => config('prematricula.show_how_to_do_video'),
-            'video_intro_url' => config('prematricula.video_intro_url'),
+            'video_intro_url' => $this->videoDeBoasVindas(),
             'link_to_restrict_area' => config('prematricula.link_to_restrict_area'),
             'features' => config('prematricula.features'),
         ];
@@ -42,6 +42,17 @@ class ConfigController
         return new Response("window.config = {$config};", 200, [
             'content-type' => 'text/javascript',
         ]);
+    }
+
+    private function videoDeBoasVindas(): string
+    {
+        $url = config('prematricula.video_intro_url');
+
+        if (is_string($url) && trim($url) !== '') {
+            return trim($url);
+        }
+
+        return 'https://www.youtube.com/embed/ltXDgjS-XpA?html5=1';
     }
 
     /**

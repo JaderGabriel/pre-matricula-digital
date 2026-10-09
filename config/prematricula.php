@@ -10,7 +10,7 @@ return [
 
     'show_how_to_do_video' => true,
 
-    'video_intro_url' => null,
+    'video_intro_url' => 'https://www.youtube.com/embed/ltXDgjS-XpA?html5=1',
 
     'ibge_codes' => '',
 
