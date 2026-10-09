@@ -1,101 +1,32 @@
 import { ErrorResponse, ID, Nullable, Student } from '@/types';
 import { FindProtocolPreRegistration, ProtocolStatusPreRegistration, ProtocolStatusReturnToWait } from '@/modules/protocol/types';
+import { cabecalhosPublicos } from '@/maps/localizarEndereco';
 import { defineFindProtocolQueryAndVariables } from '@/util';
 import { graphql } from '@/modules/protocol/api';
 
-export const show = (data: {
+export const show = async (data: {
   search: string;
 }): Promise<Nullable<ProtocolStatusPreRegistration>> => {
-  const payload = {
-    variables: data,
-    query: `
-      query preregistration(
-        $search: String
-      ) {
-        preregistration: preregistrationByProtocol(protocol: $search) {
-          id
-          type
-          status
-          position
-          student {
-            initials
-            dateOfBirth
-          }
-          school {
-            name
-            area_code
-            phone
-          }
-          classroom {
-            name
-            period {
-              name
-            }
-            grade {
-              name
-            }
-          }
-          observation
-          waiting {
-            position
-            protocol
-            school {
-              name
-              area_code
-              phone
-            }
-            process {
-              showPriorityProtocol
-            }
-          }
-          parent {
-            position
-            protocol
-            school {
-              name
-              area_code
-              phone
-            }
-            process {
-              showPriorityProtocol
-            }
-          }
-          stage {
-            observation
-          }
-          process {
-            showPriorityProtocol
-            forceSuggestedGrade
-            blockIncompatibleAgeGroup
-            grades {
-              id
-              name
-              startBirth
-              endBirth
-            }
-          }
-        }
-      }
-    `,
-  };
+  const destino = new URL('/pre-matricula-protocolo', window.location.origin);
+  destino.searchParams.set('protocolo', data.search);
+  const resposta = await fetch(destino.toString(), {
+    headers: cabecalhosPublicos(),
+    credentials: 'same-origin',
+  });
 
-  return graphql<{
-    data: {
-      data: {
-        preregistration: ProtocolStatusPreRegistration;
-      }
-    }
-  }>(payload)
-    .then(res => res.data.data.preregistration)
-    .catch((error) => {
-      const recuperada = error?.response?.data?.data?.preregistration;
+  if (!resposta.ok || !resposta.headers.get('content-type')?.includes('json')) {
+    throw new Error('consulta');
+  }
 
-      if (recuperada?.id) {
-        return recuperada;
-      }
+  const dados = await resposta.json();
 
-      throw error;
-    });
+  if (!dados?.encontrado || !dados?.id) {
+    return null;
+  }
+
+  delete dados.encontrado;
+
+  return dados;
 };
 
 export const postReturnToWait = (data: ID, grade: Nullable<string>): Promise<ProtocolStatusReturnToWait> => {

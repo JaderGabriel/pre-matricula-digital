@@ -9,6 +9,7 @@ use iEducar\Packages\PreMatricula\Console\Commands\ProcessRecalculatePriorityCom
 use iEducar\Packages\PreMatricula\Events\PreRegistrationTransferEvent;
 use iEducar\Packages\PreMatricula\Http\Controllers\AuthController;
 use iEducar\Packages\PreMatricula\Http\Controllers\ConfigController;
+use iEducar\Packages\PreMatricula\Http\Controllers\ConsultaProtocoloController;
 use iEducar\Packages\PreMatricula\Http\Controllers\ConsultarEscolaController;
 use iEducar\Packages\PreMatricula\Http\Controllers\ExportController;
 use iEducar\Packages\PreMatricula\Http\Controllers\LocalizarEnderecoController;
@@ -58,6 +59,7 @@ class PreMatriculaServiceProvider extends LaravelServiceProvider
 
             Route::get('pre-matricula-localizar', LocalizarEnderecoController::class);
             Route::get('pre-matricula-escolas', ConsultarEscolaController::class);
+            Route::get('pre-matricula-protocolo', ConsultaProtocoloController::class);
             Route::get('pre-matricula-export', ExportController::class . '@export');
             Route::get('pre-matricula-report', ReportController::class . '@preRegistrationReport');
         });
