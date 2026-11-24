@@ -2,6 +2,12 @@
 
 > Código em `portabilis/pre-matricula-digital` · **não** criar `buriti/i-educar-fila-pre-matricula-package`
 
+
+## Onda 1 (finalizada 2026-11-24)
+
+- [x] Matriz PoC / evidências / testes da onda
+- [ ] Ensaio UI roteiro R1 (humano)
+
 ## Levantamento (fazer primeiro)
 
 - [ ] Montar matriz 5.8.x (OCR) × telas/GraphQL atuais
